@@ -4,6 +4,7 @@ synopsis:
   Create skeleton project, file or code snippet from a template
 -- description:
 homepage:             https://github.com/trskop/skeletos
+bug-reports:          https://github.com/trskop/skeletos/issues
 license:              BSD3
 license-file:         LICENSE
 author:               Peter Trško
@@ -22,6 +23,10 @@ flag pedantic
     Pass additional warning flags including -Werror to GHC during compilation.
   default:              False
   manual:               True
+
+flag with-tagged
+  description: Depend on "tagged" package if base < 4.7.0.0.
+  default:              False
 
 library
   hs-source-dirs:       src
@@ -42,10 +47,15 @@ library
     , NoImplicitPrelude
     , OverloadedStrings
 
+  if flag(with-tagged)
+    -- Note: package "tagged" is not distributed with Haskell Platform.
+    build-depends: base == 4.6.*, tagged == 0.7.*
+  else
+    build-depends: base == 4.7.*
+
   build-depends:
     -- {{{ Distributed with GHC or Haskell Platform ---------------------------
-      base >=4.7 && <4.8
-    , text >=1.1 && <1.2
+      text >=1.1 && <1.2
     , containers >=0.5 && <0.6
     -- }}} Distributed with GHC or Haskell Platform ---------------------------
 
@@ -74,10 +84,15 @@ executable skeletos
     , DeriveGeneric
     , NoImplicitPrelude
 
+  if flag(with-tagged)
+    -- Note: package "tagged" is not distributed with Haskell Platform.
+    build-depends: base == 4.6.*, tagged == 0.7.*
+  else
+    build-depends: base == 4.7.*
+
   build-depends:
     -- {{{ Distributed with GHC or Haskell Platform ---------------------------
-      base >=4.7 && <4.8
-    , text >=1.1 && <1.2
+      text >=1.1 && <1.2
     -- }}} Distributed with GHC or Haskell Platform ---------------------------
 
     , skeletos ==0.1.0.0
