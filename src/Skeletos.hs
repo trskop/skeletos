@@ -18,6 +18,7 @@ module Skeletos
   , module Skeletos.Type.Config
   , module Skeletos.Type.Define
   , module Skeletos.Type.Query
+  , module Skeletos.Type.TemplateType
   )
   where
 
@@ -25,3 +26,4 @@ import Skeletos.ShowOpt
 import Skeletos.Type.Config
 import Skeletos.Type.Define
 import Skeletos.Type.Query
+import Skeletos.Type.TemplateType

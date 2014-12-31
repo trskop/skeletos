@@ -38,6 +38,7 @@ library
     , Skeletos.Type.Config
     , Skeletos.Type.Define
     , Skeletos.Type.Query
+    , Skeletos.Type.TemplateType
 
   default-language:     Haskell2010
   other-extensions:

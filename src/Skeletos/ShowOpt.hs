@@ -14,11 +14,14 @@
 module Skeletos.ShowOpt
   (
     showDefine
+  , showTemplateType
   )
   where
 
-import Control.Lens hiding (_Just)
+import qualified Data.Char as Char (toLower)
+import Data.Data (Data(toConstr), showConstr)
 import Data.Function ((.), ($))
+import qualified Data.List as List (map)
 import Data.Maybe (Maybe(Just, Nothing))
 import Data.Monoid (Monoid(mempty), (<>))
 import Text.Show (Show(show))
@@ -26,9 +29,11 @@ import Text.Show (Show(show))
 import Data.Text (Text)
 import Data.Text as Text (concatMap, pack, singleton)
 
+import Control.Lens ((^?), (^.))
 import Data.Maybe.Strict (_Just)
 
 import Skeletos.Type.Define
+import Skeletos.Type.TemplateType (TemplateType)
 
 
 showDefine :: Define -> Text
@@ -44,3 +49,6 @@ showDefine d = "-D" <> (d ^. name) <> case d ^? value . _Just of
         '"' -> "\\\""
         '$' -> "\\$"
         _   -> Text.singleton ch
+
+showTemplateType :: TemplateType -> Text
+showTemplateType = Text.pack . List.map Char.toLower . showConstr . toConstr
