@@ -40,6 +40,14 @@ data Config = Config
     }
   deriving (Data, Generic, Read, Show, Typeable)
 
+-- | Defined as:
+--
+-- @
+-- 'def' = 'Config'
+--     { '_query'   = 'def'
+--     , '_defines' = 'Seq.empty'
+--     }
+-- @
 instance Default Config where
     def = Config
         { _query = def

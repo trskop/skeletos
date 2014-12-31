@@ -84,6 +84,14 @@ data Define = Define
     }
   deriving (Data, Generic, Read, Show, Typeable)
 
+-- | Defined as:
+--
+-- @
+-- 'def' = 'Define'
+--     { '_name' = 'Text.empty'
+--     , '_value' = 'Strict.Nothing'
+--     }
+-- @
 instance Default Define where
     def = Define
         { _name = Text.empty
