@@ -65,7 +65,9 @@ library
     -- https://hackage.haskell.org/package/case-insensitive/changelog
     , containers >=0.5 && <0.6
     -- }}} Distributed with GHC or Haskell Platform ---------------------------
-
+    , aeson >=0.7 && <0.9
+    -- ^ Version 0.7.0.0 of aeson package introduced speedup and is more
+    -- memory efficient.
     , data-default-class ==0.0.*
     , lens >=3.9
     -- ^ Same dependency as strict-base-types 0.3.0.
