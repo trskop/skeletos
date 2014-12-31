@@ -15,10 +15,13 @@ module Skeletos.ShowOpt
   (
     showDefine
   , showTemplateType
+  , showTemplateType'
+  , showQueryAtom
+  , showQueryAtom'
+  , showQuery
   )
   where
 
-import qualified Data.Char as Char (toLower)
 import Data.Data (Data(toConstr), showConstr)
 import Data.Function ((.), ($))
 import qualified Data.List as List (map)
@@ -26,13 +29,17 @@ import Data.Maybe (Maybe(Just, Nothing))
 import Data.Monoid (Monoid(mempty), (<>))
 import Text.Show (Show(show))
 
+import Data.CaseInsensitive (CI)
+import qualified Data.CaseInsensitive as CI (foldedCase, map, mk)
 import Data.Text (Text)
-import Data.Text as Text (concatMap, pack, singleton)
+import Data.Text as Text (concatMap, pack, singleton, unwords)
 
-import Control.Lens ((^?), (^.))
+import Control.Lens ((^?), (^.), view)
 import Data.Maybe.Strict (_Just)
 
+import Skeletos.Internal.Utils (dropSuffix)
 import Skeletos.Type.Define
+import Skeletos.Type.Query (Query, QueryAtom(..), queryAtoms)
 import Skeletos.Type.TemplateType (TemplateType)
 
 
@@ -44,11 +51,38 @@ showDefine d = "-D" <> (d ^. name) <> case d ^? value . _Just of
         BoolValue b -> "bool:"   <> if b then "true" else "false"
         IntValue i  -> "int:"    <> Text.pack (show i)
         WordValue w -> "word:"   <> Text.pack (show w)
-  where
-    escape = concatMap $ \ch -> case ch of
-        '"' -> "\\\""
-        '$' -> "\\$"
-        _   -> Text.singleton ch
 
 showTemplateType :: TemplateType -> Text
-showTemplateType = Text.pack . List.map Char.toLower . showConstr . toConstr
+showTemplateType = CI.foldedCase . showTemplateType'
+
+showTemplateType' :: TemplateType -> CI Text
+showTemplateType' = CI.mk . Text.pack . showConstr . toConstr
+
+showQueryAtom :: QueryAtom -> Text
+showQueryAtom = CI.foldedCase . showQueryAtom'
+
+showQueryAtom' :: QueryAtom -> CI Text
+showQueryAtom' q = atomName <> eq <> case q of
+    TypeAtom x     -> showTemplateType' x
+    LanguageAtom x -> ciTextContent x
+    TagAtom x      -> ciTextContent x
+  where
+    ciTextContent = CI.map escape
+    atomName = CI.mk
+        . Text.pack
+        . dropSuffix "Atom"
+        . showConstr $ toConstr q
+    eq = CI.mk (Text.singleton '=')
+
+showQuery :: Query -> Text
+showQuery = Text.unwords . List.map showQueryAtom . view queryAtoms
+
+escape :: Text -> Text
+escape = concatMap $ \ch -> case ch of
+    '"'  -> "\\\""
+    '$'  -> "\\$"
+    ' '  -> "\\ "
+    '\'' -> "\\'"
+    _    -> Text.singleton ch
+
+--showQueryAtom :: QueryAtom
