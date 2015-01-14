@@ -64,14 +64,21 @@ library
     -- for details:
     -- https://hackage.haskell.org/package/case-insensitive/changelog
     , containers >=0.5 && <0.6
+    , filepath
+    -- ^ TODO: bounds.
     -- }}} Distributed with GHC or Haskell Platform ---------------------------
     , aeson >=0.7 && <0.9
     -- ^ Version 0.7.0.0 of aeson package introduced speedup and is more
     -- memory efficient.
-    , data-default-class ==0.0.*
+    , data-default-class == 0.0.*
+    , endo >0.1.0.0 && <0.2
+    -- ^ Version 0.1.0.0 doesn't work with transformers >=0.4.
     , lens >=3.9
     -- ^ Same dependency as strict-base-types 0.3.0.
-    , strict-base-types ==0.3.*
+    , semigroups == 0.16.*
+    -- ^ Version 0.16 changed API and times1p now takes Natural instead of
+    -- (Whole n => n).
+    , strict-base-types == 0.3.*
 
   ghc-options:          -Wall
   if flag(pedantic)
@@ -104,7 +111,31 @@ executable skeletos
       text >=1.1 && <1.2
     -- }}} Distributed with GHC or Haskell Platform ---------------------------
 
-    , skeletos ==0.1.0.0
+    -- {{{ Library ------------------------------------------------------------
+    -- {{{ Library dependencies -----------------------------------------------
+    , case-insensitive == 1.2.*
+    -- ^ In HP since version 2013.2.0.0 (case-insensitive 1.0.0.1), but
+    -- required Data instance was introduced in version 1.2.0.0, see changelog
+    -- for details:
+    -- https://hackage.haskell.org/package/case-insensitive/changelog
+    , containers >=0.5 && <0.6
+    -- }}} Distributed with GHC or Haskell Platform ---------------------------
+    , aeson >=0.7 && <0.9
+    -- ^ Version 0.7.0.0 of aeson package introduced speedup and is more
+    -- memory efficient.
+    , data-default-class == 0.0.*
+    , lens >=3.9
+    -- ^ Same dependency as strict-base-types 0.3.0.
+    , strict-base-types == 0.3.*
+    -- }}} Library dependencies -----------------------------------------------
+
+    , skeletos == 0.1.0.0
+    -- }}} Library ------------------------------------------------------------
+
+    , endo > 0.1.0.0
+    , optparse-applicative == 0.11.*
+    -- ^ See its changelog for details:
+    -- http://hackage.haskell.org/package/optparse-applicative-0.11.0.1/changelog
 
   ghc-options:          -Wall
   if flag(pedantic)
