@@ -1,6 +1,8 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE StandaloneDeriving #-}
 -- |
 -- Module:       $HEADER$
 -- Description:  TODO
@@ -9,7 +11,8 @@
 --
 -- Maintainer:   peter.trsko@gmail.com
 -- Stability:    experimental
--- Portability:  DeriveDataTypeable, DeriveGeneric, NoImplicitPrelude
+-- Portability:  DataKinds, DeriveDataTypeable, DeriveGeneric,
+--               NoImplicitPrelude
 --
 -- TODO
 module Skeletos.Type.TemplateType
@@ -30,3 +33,7 @@ import Text.Show (Show)
 
 data TemplateType = Package | File | Snippet
   deriving (Bounded, Data, Enum, Eq, Generic, Ord, Read, Show, Typeable)
+
+deriving instance Typeable 'Package
+deriving instance Typeable 'File
+deriving instance Typeable 'Snippet
