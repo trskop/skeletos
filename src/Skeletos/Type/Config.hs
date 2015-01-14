@@ -23,20 +23,17 @@ import GHC.Generics (Generic)
 import Text.Read (Read)
 import Text.Show (Show)
 
-import Data.Sequence (Seq)
-import qualified Data.Sequence as Seq (empty)
-
 import Control.Lens (Lens')
 import Data.Default.Class (Default(def))
 
 import Skeletos.Internal.Utils ((<$$>))
 import Skeletos.Type.Query (Query)
-import Skeletos.Type.Define (Define)
+import Skeletos.Type.Define (Defines)
 
 
 data Config = Config
-    { _query :: Query
-    , _defines :: Seq Define
+    { _query   :: Query
+    , _defines :: Defines
     }
   deriving (Data, Generic, Read, Show, Typeable)
 
@@ -45,17 +42,17 @@ data Config = Config
 -- @
 -- 'def' = 'Config'
 --     { '_query'   = 'def'
---     , '_defines' = 'Seq.empty'
+--     , '_defines' = 'def'
 --     }
 -- @
 instance Default Config where
     def = Config
-        { _query = def
-        , _defines = Seq.empty
+        { _query   = def
+        , _defines = def
         }
 
 query :: Lens' Config Query
 query f s@Config{_query = a} = f a <$$> \b -> s{_query = b}
 
-defines :: Lens' Config (Seq Define)
+defines :: Lens' Config Defines
 defines f s@Config{_defines = a} = f a <$$> \b -> s{_defines = b}

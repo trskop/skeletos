@@ -15,10 +15,12 @@
 module Skeletos.Type.Define
     (
     -- * Data Types
-      Define(..)
+      Defines(..)
+    , Define(..)
     , Value(..)
 
     -- * Lenses
+    , defines
     , name
     , value
 
@@ -51,6 +53,8 @@ import Data.Default.Class (Default(def))
 import Skeletos.Internal.Utils ((<$$>))
 
 
+-- {{{ Value ------------------------------------------------------------------
+
 data Value
     = BoolValue !Bool
     | TextValue !Text
@@ -78,6 +82,10 @@ wordValue = prism' WordValue $ \v -> case v of
     WordValue x -> Just x
     _           -> Nothing
 
+-- }}} Value ------------------------------------------------------------------
+
+-- {{{ Define -----------------------------------------------------------------
+
 data Define = Define
     { _name :: !Text
     , _value :: Strict.Maybe Value
@@ -103,3 +111,18 @@ name f s@Define{_name = a} = f a <$$> \b -> s{_name = b}
 
 value :: Lens' Define (Strict.Maybe Value)
 value f s@Define{_value = a} = f a <$$> \b -> s{_value = b}
+
+-- }}} Define -----------------------------------------------------------------
+
+-- {{{ Defines ----------------------------------------------------------------
+
+newtype Defines = Defines [Define]
+  deriving (Data, Generic, Read, Show, Typeable)
+
+instance Default Defines where
+    def = Defines []
+
+defines :: Lens' Defines [Define]
+defines f (Defines ds) = f ds <$$> Defines
+
+-- }}} Defines ----------------------------------------------------------------
