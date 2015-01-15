@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE RecordWildCards #-}
 -- |
 -- Module:       $HEADER$
 -- Description:  TODO
@@ -9,7 +8,7 @@
 --
 -- Maintainer:   peter.trsko@gmail.com
 -- Stability:    experimental
--- Portability:  DeriveDataTypeable, NoImplicitPrelude, RecordWildCards
+-- Portability:  DeriveDataTypeable, NoImplicitPrelude
 --
 -- TODO
 module Main (main)
@@ -23,45 +22,34 @@ import Data.Maybe (Maybe(Just, Nothing))
 import Data.Monoid (Monoid(mconcat))
 import Data.String (String)
 import Data.Version (showVersion)
-import System.IO (FilePath, IO, hPutStrLn, print, stderr)
-import Text.Show (Show)
+import System.IO (IO, hPutStrLn, print, stderr)
 
 import Data.Text (Text)
 import qualified Data.Text.IO as Text (putStr, writeFile)
 
-import Control.Lens ((.~), (&))
+import Control.Lens ((^.), (.~), (&), view)
 import Data.Default.Class (Default(def))
 import Options.Applicative
 
 import Skeletos.Parse (parseDefine, parseQueryAtom)
 import Skeletos.Type.Config (Config)
 import qualified Skeletos.Type.Config as Config (defines, query)
-import Skeletos.Type.Define (Define, defines)
-import Skeletos.Type.Query (QueryAtom, queryAtoms)
+import Skeletos.Type.Define (defines)
+import Skeletos.Type.Query (queryAtoms)
 
+import Main.Type.OptionsConfig
+    ( OptionsConfig(OptionsConfig)
+    , variableDefines
+    , outputFile
+    , templateSearchQuery
+    )
 import Paths_skeletos (version)
 
 
-data OptionsConfig = OptionsConfig
-    { variableDefines :: [Define]
-    , outputFile :: Maybe FilePath
-    -- ^ Is either 'Data.Maybe.Nothing' or 'Data.Maybe.Just' non-empty string.
-    -- Invariant of non-empty string is preserved by 'filePath' parser.
-    , templateSearchQuery :: [QueryAtom]
-    }
-  deriving (Show)
-
-instance Default OptionsConfig where
-    def = OptionsConfig
-        { variableDefines     = []
-        , outputFile          = Nothing
-        , templateSearchQuery = []
-        }
-
 getSkeletosConfig :: OptionsConfig -> Config
-getSkeletosConfig OptionsConfig{..} = def
-    & Config.defines . defines    .~ variableDefines
-    & Config.query   . queryAtoms .~ templateSearchQuery
+getSkeletosConfig optcfg = def
+    & Config.defines . defines    .~ view variableDefines optcfg
+    & Config.query   . queryAtoms .~ view templateSearchQuery optcfg
 
 options :: Parser OptionsConfig
 options = OptionsConfig
@@ -99,7 +87,7 @@ main = do
     case r of
         Left msg         -> hPutStrLn stderr msg
         Right Nothing    -> return ()
-        Right (Just out) -> case outputFile appConfig of
+        Right (Just out) -> case appConfig ^. outputFile of
             Nothing   -> Text.putStr out
             Just file -> Text.writeFile file out
   where
