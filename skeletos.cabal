@@ -109,6 +109,7 @@ executable skeletos
   build-depends:
     -- {{{ Distributed with GHC or Haskell Platform ---------------------------
       text >=1.1 && <1.2
+    , transformers > 0.3 && < 0.5
     -- }}} Distributed with GHC or Haskell Platform ---------------------------
 
     -- {{{ Library ------------------------------------------------------------

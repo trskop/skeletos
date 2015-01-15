@@ -24,11 +24,14 @@ import Data.String (String)
 import Data.Version (showVersion)
 import System.IO (IO, hPutStrLn, print, stderr)
 
+import Control.Monad.Trans.Identity (IdentityT(IdentityT, runIdentityT))
 import Data.Text (Text)
 import qualified Data.Text.IO as Text (putStr, writeFile)
 
-import Control.Lens ((^.), (.~), (&), view)
+import Control.Lens ((^.), (.~), (&), (%~), set, view)
 import Data.Default.Class (Default(def))
+import Data.Monoid.Endo (E, runEndo)
+import Data.Monoid.Endo.Fold ((<&$>), (&$), foldEndo)
 import Options.Applicative
 
 import Skeletos.Parse (parseDefine, parseQueryAtom)
@@ -38,7 +41,7 @@ import Skeletos.Type.Define (defines)
 import Skeletos.Type.Query (queryAtoms)
 
 import Main.Type.OptionsConfig
-    ( OptionsConfig(OptionsConfig)
+    ( OptionsConfig
     , variableDefines
     , outputFile
     , templateSearchQuery
@@ -52,33 +55,48 @@ getSkeletosConfig optcfg = def
     & Config.query   . queryAtoms .~ view templateSearchQuery optcfg
 
 options :: Parser OptionsConfig
-options = OptionsConfig
-    <$> (many . option (eitherReader parseDefine) . mconcat)
-        [ short 'D'
-        , metavar "VARIABLE[=[TYPE:]VALUE]"
-        , help "Define a variable with optional (typed) value."
-        ]
-    <*> (optional . option filePath . mconcat)
-        [ short 'o'
-        , metavar "FILE"
-        , help $ List.unwords
-            [ "Store output in to a file, if supported by template type,"
-            , "instead of printing it to a stdout."
-            ]
-        ]
-    <*> (some . argument (eitherReader parseQueryAtom))
-        ( metavar "QUERY"
-        <> help (List.unwords
-            [ "Query consisting of one or multiple key=value pairs for"
-            , "selecting specific template."
-            ])
-        )
+options = runIdentityT $ runEndo def <&$> foldEndo
+    <*> IdentityT defineOption
+    <*> IdentityT outputFileOption
+    <*> IdentityT queryArgument
+
+defineOption :: Parser [E OptionsConfig]
+defineOption = many . option define $ mconcat
+    [ short 'D'
+    , metavar "VARIABLE[=[TYPE:]VALUE]"
+    , help "Define a variable with optional (typed) value."
+    ]
   where
-    filePath = nonEmptyStr "Option argument can not be empty file path."
+    define = addDefine <$> eitherReader parseDefine
+    addDefine d = variableDefines %~ (d :)
+
+outputFileOption :: Parser (Maybe (E OptionsConfig))
+outputFileOption = optional . option filePath $ mconcat
+    [ short 'o'
+    , metavar "FILE"
+    , help $ List.unwords
+        [ "Store output in to a file, if supported by template type,"
+        , "instead of printing it to a stdout."
+        ]
+    ]
+  where
+    filePath = set outputFile
+        <$> nonEmptyStr "Option argument can not be empty file path."
+
     nonEmptyStr msg = eitherReader $ \s ->
         if List.null s
             then Left msg
-            else Right s
+            else Right (Just s)
+
+queryArgument :: Parser [E OptionsConfig]
+queryArgument = some . argument queryAtom &$ metavar "QUERY"
+    <> help (List.unwords
+        [ "Query consisting of one or multiple key=value pairs for"
+        , "selecting specific template."
+        ])
+  where
+    queryAtom = addQueryAtom <$> eitherReader parseQueryAtom
+    addQueryAtom a = templateSearchQuery %~ (a :)
 
 main :: IO ()
 main = do
